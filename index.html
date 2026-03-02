@@ -425,4 +425,108 @@ export default function App() {
       {isBelieverModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 no-print">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center p-
+            <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
+              <h3 className="text-lg font-bold text-gray-900">{currentBeliever.id ? '編輯信眾' : '新增信眾'}</h3>
+              <button onClick={() => setIsBelieverModalOpen(false)} className="text-gray-400 hover:text-gray-500">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 grid grid-cols-2 gap-4">
+              {/* 國曆轉農曆工具區塊 */}
+              <div className="col-span-2 bg-red-50 p-4 rounded-md border border-red-100 mb-2">
+                <label className="block text-sm font-bold text-red-800 mb-2">✨ 國曆轉農曆與八字自動計算</label>
+                <div className="flex space-x-2">
+                  <input
+                    type="datetime-local"
+                    className="flex-1 border-gray-300 rounded-md shadow-sm p-2 bg-white"
+                    value={gregorianDate}
+                    onChange={e => setGregorianDate(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleConvertDate}
+                    className="px-4 py-2 bg-red-700 text-white rounded-md text-sm font-medium hover:bg-red-800 transition-colors whitespace-nowrap"
+                  >
+                    自動轉換
+                  </button>
+                </div>
+                <p className="text-xs text-red-600 mt-2">
+                  選擇國曆出生年月日時，點擊轉換即可自動填入下方的「農曆生辰」與「八字」。
+                </p>
+              </div>
+
+              <div className="col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">姓名</label>
+                <input type="text" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.name} onChange={e => setCurrentBeliever({...currentBeliever, name: e.target.value})} />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">性別</label>
+                <select className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.gender} onChange={e => setCurrentBeliever({...currentBeliever, gender: e.target.value})}>
+                  <option value="男">男 (信士)</option>
+                  <option value="女">女 (信女)</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">聯絡電話</label>
+                <input type="text" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.phone} onChange={e => setCurrentBeliever({...currentBeliever, phone: e.target.value})} />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">居住地址</label>
+                <input type="text" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.address} onChange={e => setCurrentBeliever({...currentBeliever, address: e.target.value})} />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">農曆生辰 (年/月/日/時)</label>
+                <input type="text" placeholder="例: 甲子年正月初一子時" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2 bg-yellow-50" value={currentBeliever.lunarDob} onChange={e => setCurrentBeliever({...currentBeliever, lunarDob: e.target.value})} />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">八字</label>
+                <input type="text" placeholder="例: 甲子 丙寅 丁卯 甲子" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2 bg-yellow-50" value={currentBeliever.bazi} onChange={e => setCurrentBeliever({...currentBeliever, bazi: e.target.value})} />
+              </div>
+            </div>
+            <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-end space-x-3 border-t sticky bottom-0">
+              <button onClick={() => setIsBelieverModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">取消</button>
+              <button onClick={handleSaveBeliever} className="px-4 py-2 bg-red-700 text-white rounded-md text-sm font-medium hover:bg-red-800 flex items-center">
+                <Save className="w-4 h-4 mr-2" /> 儲存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 批次匯入 Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 no-print">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-lg font-bold text-gray-900">批次匯入信眾資料</h3>
+              <button onClick={() => setIsImportModalOpen(false)} className="text-gray-400 hover:text-gray-500">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-600 mb-4">
+                請貼上逗號分隔的資料 (CSV格式)。<br/>
+                格式順序：<strong className="text-red-600">姓名,性別,電話,地址,農曆生日,八字</strong><br/>
+                一行代表一位信眾。
+              </p>
+              <textarea 
+                className="w-full h-64 border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-3 font-mono text-sm"
+                placeholder="王大明,男,0912345678,台北市信義區...,甲子年正月初一子時,甲子 丙寅 丁卯 甲子&#10;林小華,女,0987654321,台中市西屯區...,乙丑年二月十五午時,乙丑 戊寅 己巳 庚午"
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+              ></textarea>
+            </div>
+            <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-end space-x-3">
+              <button onClick={() => setIsImportModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">取消</button>
+              <button onClick={handleImport} className="px-4 py-2 bg-red-700 text-white rounded-md text-sm font-medium hover:bg-red-800 flex items-center">
+                <Upload className="w-4 h-4 mr-2" /> 執行匯入
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
