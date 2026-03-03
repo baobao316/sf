@@ -11,6 +11,8 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- 載入 Babel 以便在瀏覽器中編譯 JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 載入農曆轉換套件 (改為靜態載入以支援本地端雙擊開啟) -->
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
 
     <style>
         /* 列印專用樣式 */
@@ -32,7 +34,7 @@
 <body class="bg-gray-50">
     <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
+    <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
         // --- 內建圖示 (取代原先的 lucide-react 以利單檔執行) ---
@@ -92,14 +94,13 @@
             const [generatedShuwenList, setGeneratedShuwenList] = useState([]);
 
             // --- 國曆轉農曆功能 ---
-            const handleConvertDate = async () => {
+            const handleConvertDate = () => {
                 if (!gregorianDate) {
                     alert('請先選擇國曆日期與時間');
                     return;
                 }
                 try {
-                    // 動態載入農曆轉換套件以確保環境相容性
-                    const { Solar } = await import('https://esm.sh/lunar-javascript@1.6.12');
+                    // 直接使用全域變數 Solar (已在 head 引入)
                     const dateObj = new Date(gregorianDate);
                     const solar = Solar.fromDate(dateObj);
                     const lunar = solar.getLunar();
@@ -123,7 +124,7 @@
                     }));
                 } catch (error) {
                     console.error('Date conversion error:', error);
-                    alert('農曆轉換模組載入失敗，請檢查網路連線。');
+                    alert('轉換失敗，請檢查輸入的日期格式。');
                 }
             };
 
