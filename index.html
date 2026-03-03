@@ -16,11 +16,13 @@ const Edit = ({className}) => <Icon className={className}><path d="M11 4H4a2 2 0
 const Save = ({className}) => <Icon className={className}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></Icon>;
 const XIcon = ({className}) => <Icon className={className}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Icon>;
 const BookOpen = ({className}) => <Icon className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></Icon>;
+const Settings = ({className}) => <Icon className={className}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></Icon>;
 
 // --- 初始假資料 ---
 const initialBelievers = [
-    { id: 1, name: '王大明', gender: '男', phone: '0912-345-678', address: '台北市信義區市府路1號', lunarDob: '甲子年正月初一子時', bazi: '甲子 丙寅 丁卯 甲子' },
-    { id: 2, name: '林小華', gender: '女', phone: '0987-654-321', address: '台中市西屯區台灣大道三段99號', lunarDob: '乙丑年二月十五午時', bazi: '乙丑 戊寅 己巳 庚午' }
+    { id: 1, type: 'living', name: '王大明', gender: '男', phone: '0912-345-678', address: '台北市信義區市府路1號', lunarDob: '甲子年正月初一子時', bazi: '甲子 丙寅 丁卯 甲子', lunarDeath: '' },
+    { id: 2, type: 'living', name: '林小華', gender: '女', phone: '0987-654-321', address: '台中市西屯區台灣大道三段99號', lunarDob: '乙丑年二月十五午時', bazi: '乙丑 戊寅 己巳 庚午', lunarDeath: '' },
+    { id: 3, type: 'deceased', name: '陳阿公', gender: '男', phone: '', address: '高雄市某安息靈骨塔', lunarDob: '辛亥年五月初五子時', bazi: '辛亥 甲午 丙辰 戊子', lunarDeath: '癸卯年十月廿日申時' }
 ];
 
 const initialTemplates = [
@@ -33,6 +35,11 @@ const initialTemplates = [
         id: 2, 
         title: '安太歲疏文', 
         content: `伏以\n拜請 本年值年太歲星君 寶座前\n\n信士/信女 [姓名]\n居住 [地址]\n生於 [農曆生日]\n八字 [八字]\n\n本年命犯太歲，恐有災厄流煞。今虔誠設立太歲星君神位，朝夕敬奉。\n祈求\n星君庇佑，逢凶化吉，化險為夷，出入平安，四季無災。\n\n天運 歲次 [填寫年份] 年 [填寫月份] 月 [填寫日期] 日 叩謝神恩`
+    },
+    { 
+        id: 3, 
+        title: '拔度超薦疏文 (亡者)', 
+        content: `伏以\n拜請 幽冥教主地藏王菩薩 寶座前\n\n今有 陽上眷屬 誠心祈求\n為拔度亡者 [姓名]\n生於 [農曆生日]\n卒於 [往生生辰]\n\n祈求\n菩薩慈悲接引，消除宿業，免除輪迴之苦，早超昇天界，往生西方極樂淨土。\n\n天運 歲次 [填寫年份] 年 [填寫月份] 月 [填寫日期] 日 叩求`
     }
 ];
 
@@ -48,24 +55,33 @@ export default function App() {
     const [importText, setImportText] = useState('');
     
     const [isBelieverModalOpen, setIsBelieverModalOpen] = useState(false);
-    const [currentBeliever, setCurrentBeliever] = useState({ name: '', gender: '男', phone: '', address: '', lunarDob: '', bazi: '' });
-    const [gregorianDate, setGregorianDate] = useState(''); // 用於國曆轉農曆輸入
+    const [currentBeliever, setCurrentBeliever] = useState({ type: 'living', name: '', gender: '男', phone: '', address: '', lunarDob: '', bazi: '', lunarDeath: '' });
+    
+    // 國曆轉農曆輸入狀態 (支援出生與往生)
+    const [gregorianBirth, setGregorianBirth] = useState(''); 
+    const [gregorianDeath, setGregorianDeath] = useState(''); 
     
     // 疏文生成狀態
     const [selectedTemplate, setSelectedTemplate] = useState(initialTemplates[0]);
     const [selectedBelieversForShuwen, setSelectedBelieversForShuwen] = useState([]);
     const [generatedShuwenList, setGeneratedShuwenList] = useState([]);
 
+    // 套印模式狀態
+    const [isOverprintMode, setIsOverprintMode] = useState(false);
+    const [printMarginTop, setPrintMarginTop] = useState(30); // 上方邊距 (mm)
+    const [printMarginRight, setPrintMarginRight] = useState(30); // 右側邊距 (mm)
+
     // --- 國曆轉農曆功能 ---
-    const handleConvertDate = async () => {
-        if (!gregorianDate) {
+    const handleConvertDate = async (targetField) => {
+        const dateToConvert = targetField === 'birth' ? gregorianBirth : gregorianDeath;
+        if (!dateToConvert) {
             alert('請先選擇國曆日期與時間');
             return;
         }
         try {
             // 動態載入農曆轉換套件以確保環境相容性
             const { Solar } = await import('https://esm.sh/lunar-javascript@1.6.12');
-            const dateObj = new Date(gregorianDate);
+            const dateObj = new Date(dateToConvert);
             const solar = Solar.fromDate(dateObj);
             const lunar = solar.getLunar();
 
@@ -76,16 +92,14 @@ export default function App() {
             const lunarTime = lunar.getTimeZhi() + '時';
             const lunarDobStr = `${lunarYear}${lunarMonth}${lunarDay}${lunarTime}`;
 
-            // 組裝八字字串
-            const baZi = lunar.getEightChar();
-            const baziStr = `${baZi.getYear()} ${baZi.getMonth()} ${baZi.getDay()} ${baZi.getTime()}`;
-
-            // 更新到目前編輯中的信眾狀態
-            setCurrentBeliever(prev => ({
-                ...prev,
-                lunarDob: lunarDobStr,
-                bazi: baziStr
-            }));
+            if (targetField === 'birth') {
+                const baZi = lunar.getEightChar();
+                const baziStr = `${baZi.getYear()} ${baZi.getMonth()} ${baZi.getDay()} ${baZi.getTime()}`;
+                setCurrentBeliever(prev => ({ ...prev, lunarDob: lunarDobStr, bazi: baziStr }));
+            } else {
+                // 往生生辰通常不特別記錄八字，僅記錄農曆時間
+                setCurrentBeliever(prev => ({ ...prev, lunarDeath: lunarDobStr }));
+            }
         } catch (error) {
             console.error('Date conversion error:', error);
             alert('轉換失敗，請檢查輸入的日期格式。');
@@ -100,14 +114,14 @@ export default function App() {
             setBelievers([...believers, { ...currentBeliever, id: Date.now() }]);
         }
         setIsBelieverModalOpen(false);
-        setCurrentBeliever({ name: '', gender: '男', phone: '', address: '', lunarDob: '', bazi: '' });
-        setGregorianDate('');
+        setCurrentBeliever({ type: 'living', name: '', gender: '男', phone: '', address: '', lunarDob: '', bazi: '', lunarDeath: '' });
+        setGregorianBirth('');
+        setGregorianDeath('');
     };
 
     const handleDeleteBeliever = (id) => {
-        if(window.confirm('確定要刪除這位信眾嗎？')) {
+        if(window.confirm('確定要刪除這筆資料嗎？')) {
             setBelievers(believers.filter(b => b.id !== id));
-            // 同時從選中的疏文清單移除
             setSelectedBelieversForShuwen(selectedBelieversForShuwen.filter(bId => bId !== id));
         }
     };
@@ -116,17 +130,20 @@ export default function App() {
         try {
             const lines = importText.split('\n');
             const newBelievers = lines.map((line, index) => {
-                // 假設 CSV 格式: 姓名,性別,電話,地址,農曆生日,八字
+                // 擴充 CSV 格式: 姓名,類別(陽上/亡者),性別,電話,地址,農曆生日,八字,往生生辰
                 const parts = line.split(',');
                 if (parts.length >= 1 && parts[0].trim() !== '') {
+                    const typeStr = parts[1]?.trim() === '亡者' ? 'deceased' : 'living';
                     return {
                         id: Date.now() + index,
                         name: parts[0]?.trim() || '',
-                        gender: parts[1]?.trim() || '男',
-                        phone: parts[2]?.trim() || '',
-                        address: parts[3]?.trim() || '',
-                        lunarDob: parts[4]?.trim() || '',
-                        bazi: parts[5]?.trim() || ''
+                        type: typeStr,
+                        gender: parts[2]?.trim() || '男',
+                        phone: parts[3]?.trim() || '',
+                        address: parts[4]?.trim() || '',
+                        lunarDob: parts[5]?.trim() || '',
+                        bazi: parts[6]?.trim() || '',
+                        lunarDeath: parts[7]?.trim() || ''
                     };
                 }
                 return null;
@@ -167,6 +184,7 @@ export default function App() {
             content = content.replace(/\[地址\]/g, believer.address || '__________________');
             content = content.replace(/\[農曆生日\]/g, believer.lunarDob || '__________________');
             content = content.replace(/\[八字\]/g, believer.bazi || '__________________');
+            content = content.replace(/\[往生生辰\]/g, believer.lunarDeath || '__________________');
             
             return {
                 believerId: believer.id,
@@ -204,7 +222,7 @@ export default function App() {
             
             <div className="min-h-screen flex font-sans text-gray-800 bg-gray-50">
                 {/* 側邊欄 */}
-                <aside className="w-64 bg-red-900 text-yellow-50 flex flex-col no-print h-screen sticky top-0">
+                <aside className="w-64 bg-red-900 text-yellow-50 flex flex-col no-print h-screen sticky top-0 shadow-lg">
                     <div className="p-6 border-b border-red-800 text-center">
                         <BookOpen className="w-12 h-12 mx-auto mb-2 text-yellow-400" />
                         <h1 className="text-xl font-bold tracking-widest text-yellow-400">宮廟管理系統</h1>
@@ -215,18 +233,18 @@ export default function App() {
                             className={`w-full flex items-center p-3 rounded-lg transition-colors ${activeTab === 'believers' ? 'bg-red-800 text-yellow-400 font-bold' : 'hover:bg-red-800/50'}`}
                         >
                             <Users className="w-5 h-5 mr-3" />
-                            信眾名冊與八字
+                            信眾與亡者名冊
                         </button>
                         <button 
                             onClick={() => setActiveTab('shuwen')}
                             className={`w-full flex items-center p-3 rounded-lg transition-colors ${activeTab === 'shuwen' ? 'bg-red-800 text-yellow-400 font-bold' : 'hover:bg-red-800/50'}`}
                         >
                             <FileText className="w-5 h-5 mr-3" />
-                            疏文管理與列印
+                            疏文與套印管理
                         </button>
                     </nav>
                     <div className="p-4 text-xs text-red-300 text-center border-t border-red-800">
-                        系統版本 v1.1
+                        系統版本 v1.2 (含套印功能)
                     </div>
                 </aside>
 
@@ -234,9 +252,9 @@ export default function App() {
                 <main className="flex-1 flex flex-col min-h-screen">
                     {/* 信眾管理 Tab */}
                     {activeTab === 'believers' && (
-                        <div className="flex-1 p-8 no-print">
+                        <div className="flex-1 p-8 no-print overflow-y-auto">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-gray-800 border-l-4 border-red-600 pl-3">信眾名冊管理</h2>
+                                <h2 className="text-2xl font-bold text-gray-800 border-l-4 border-red-600 pl-3">信眾與亡者名單</h2>
                                 <div className="space-x-3">
                                     <button 
                                         onClick={() => setIsImportModalOpen(true)}
@@ -247,47 +265,59 @@ export default function App() {
                                     </button>
                                     <button 
                                         onClick={() => { 
-                                            setCurrentBeliever({ name: '', gender: '男', phone: '', address: '', lunarDob: '', bazi: '' }); 
-                                            setGregorianDate(''); // 清空日期
+                                            setCurrentBeliever({ type: 'living', name: '', gender: '男', phone: '', address: '', lunarDob: '', bazi: '', lunarDeath: '' }); 
+                                            setGregorianBirth('');
+                                            setGregorianDeath('');
                                             setIsBelieverModalOpen(true); 
                                         }}
                                         className="px-4 py-2 bg-red-700 rounded-md shadow-sm text-sm font-medium text-white hover:bg-red-800 flex items-center inline-flex"
                                     >
                                         <Plus className="w-4 h-4 mr-2" />
-                                        新增信眾
+                                        新增資料
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-lg shadow overflow-hidden">
+                            <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-red-50">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase tracking-wider">姓名/性別</th>
-                                            <th className="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase tracking-wider">聯絡電話</th>
+                                            <th className="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase tracking-wider">姓名/身分</th>
                                             <th className="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase tracking-wider">農曆生辰 / 八字</th>
-                                            <th className="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase tracking-wider">居住地址</th>
+                                            <th className="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase tracking-wider">往生生辰 (亡者)</th>
+                                            <th className="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase tracking-wider">聯絡電話/地址</th>
                                             <th className="px-6 py-3 text-right text-xs font-bold text-red-800 uppercase tracking-wider">操作</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {believers.map((b) => (
-                                            <tr key={b.id} className="hover:bg-gray-50">
+                                            <tr key={b.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="font-medium text-gray-900">{b.name}</div>
+                                                    <div className="flex items-center mb-1">
+                                                        <span className={`px-2 py-0.5 text-xs font-bold rounded mr-2 ${b.type === 'deceased' ? 'bg-gray-200 text-gray-700' : 'bg-green-100 text-green-800'}`}>
+                                                            {b.type === 'deceased' ? '亡者' : '陽上'}
+                                                        </span>
+                                                        <div className="font-medium text-gray-900">{b.name}</div>
+                                                    </div>
                                                     <div className="text-sm text-gray-500">{b.gender}</div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{b.phone}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-sm text-gray-900">{b.lunarDob || '-'}</div>
-                                                    <div className="text-sm font-mono text-red-700 mt-1">{b.bazi || '-'}</div>
+                                                    {b.type === 'living' && <div className="text-sm font-mono text-red-700 mt-1">{b.bazi || '-'}</div>}
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">{b.address}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {b.type === 'deceased' ? <span className="text-sm text-gray-900 font-medium">{b.lunarDeath || '-'}</span> : <span className="text-gray-300">-</span>}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm text-gray-900">{b.phone || '-'}</div>
+                                                    <div className="text-xs text-gray-500 mt-1 truncate max-w-xs" title={b.address}>{b.address || '-'}</div>
+                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <button 
                                                         onClick={() => { 
                                                             setCurrentBeliever(b); 
-                                                            setGregorianDate(''); // 編輯時清空日期
+                                                            setGregorianBirth(''); 
+                                                            setGregorianDeath(''); 
                                                             setIsBelieverModalOpen(true); 
                                                         }} 
                                                         className="text-indigo-600 hover:text-indigo-900 mr-4 inline-block"
@@ -318,12 +348,12 @@ export default function App() {
                         <div className="flex-1 flex overflow-hidden">
                             {/* 左側設定區 */}
                             <div className="w-1/3 border-r border-gray-200 bg-white p-6 overflow-y-auto no-print h-screen sticky top-0">
-                                <h2 className="text-xl font-bold text-gray-800 border-l-4 border-red-600 pl-3 mb-6">疏文設定</h2>
+                                <h2 className="text-xl font-bold text-gray-800 border-l-4 border-red-600 pl-3 mb-6">疏文與套印設定</h2>
                                 
                                 <div className="mb-6">
                                     <label className="block text-sm font-bold text-gray-700 mb-2">1. 選擇疏文範本</label>
                                     <select 
-                                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 p-2 border"
+                                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 p-2 border bg-gray-50"
                                         value={selectedTemplate?.id || ''}
                                         onChange={(e) => setSelectedTemplate(templates.find(t => t.id === parseInt(e.target.value)))}
                                     >
@@ -333,57 +363,114 @@ export default function App() {
                                     </select>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">2. 選擇信眾 (可複選)</label>
-                                    <div className="border border-gray-200 rounded-md max-h-96 overflow-y-auto bg-gray-50 p-2">
+                                <div className="mb-6">
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">2. 選擇對象 (可複選)</label>
+                                    <div className="border border-gray-200 rounded-md max-h-60 overflow-y-auto bg-gray-50 p-2">
                                         {believers.map(b => (
-                                            <label key={b.id} className="flex items-center p-2 hover:bg-red-50 rounded cursor-pointer transition-colors">
+                                            <label key={b.id} className="flex items-center p-2 hover:bg-red-50 rounded cursor-pointer transition-colors border-b border-gray-100 last:border-0">
                                                 <input 
                                                     type="checkbox" 
                                                     className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                                                     checked={selectedBelieversForShuwen.includes(b.id)}
                                                     onChange={() => handleToggleBelieverForShuwen(b.id)}
                                                 />
-                                                <span className="ml-3 text-sm font-medium text-gray-700">{b.name}</span>
-                                                <span className="ml-2 text-xs text-gray-500">({b.bazi || '無八字'})</span>
+                                                <span className={`ml-2 px-1.5 py-0.5 text-[10px] rounded ${b.type === 'deceased' ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'}`}>
+                                                    {b.type === 'deceased' ? '亡者' : '陽上'}
+                                                </span>
+                                                <span className="ml-2 text-sm font-medium text-gray-700">{b.name}</span>
                                             </label>
                                         ))}
-                                        {believers.length === 0 && <p className="text-xs text-gray-500 p-2">請先建立信眾名單</p>}
+                                        {believers.length === 0 && <p className="text-xs text-gray-500 p-2">請先建立名單</p>}
                                     </div>
                                 </div>
+
+                                {/* 套印設定區塊 */}
+                                <div className="border border-red-200 rounded-lg bg-red-50 p-4">
+                                    <div className="flex items-center mb-3">
+                                        <Settings className="w-5 h-5 text-red-700 mr-2" />
+                                        <h3 className="text-sm font-bold text-red-800">列印模式設定</h3>
+                                    </div>
+                                    
+                                    <label className="flex items-center space-x-2 text-sm font-bold text-gray-700 mb-4 cursor-pointer">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={isOverprintMode} 
+                                            onChange={e => setIsOverprintMode(e.target.checked)} 
+                                            className="rounded text-red-600 w-4 h-4 focus:ring-red-500" 
+                                        />
+                                        <span>啟用「套印模式」</span>
+                                        <span className="text-xs font-normal text-gray-500 ml-1">(隱藏背景與邊框)</span>
+                                    </label>
+
+                                    {isOverprintMode && (
+                                        <div className="grid grid-cols-2 gap-3 mt-2 bg-white p-3 rounded border border-red-100 shadow-sm">
+                                            <div>
+                                                <label className="block text-gray-700 text-xs font-bold mb-1">上方邊距 (mm)</label>
+                                                <input 
+                                                    type="number" 
+                                                    value={printMarginTop} 
+                                                    onChange={e => setPrintMarginTop(Number(e.target.value))} 
+                                                    className="w-full border-gray-300 border p-1.5 text-sm rounded focus:ring-red-500 focus:border-red-500" 
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-gray-700 text-xs font-bold mb-1">右側邊距 (mm)</label>
+                                                <input 
+                                                    type="number" 
+                                                    value={printMarginRight} 
+                                                    onChange={e => setPrintMarginRight(Number(e.target.value))} 
+                                                    className="w-full border-gray-300 border p-1.5 text-sm rounded focus:ring-red-500 focus:border-red-500" 
+                                                />
+                                            </div>
+                                            <div className="col-span-2 text-[10px] text-gray-400 leading-tight">
+                                                * 因實體疏文紙格式各異，請先以白紙測試列印，並依需求微調邊距數值以對齊實體格線。
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
                             </div>
 
                             {/* 右側預覽與列印區 */}
-                            <div className="w-2/3 bg-gray-100 p-6 flex flex-col h-screen overflow-y-auto">
-                                <div className="flex justify-between items-center mb-4 no-print">
-                                    <h3 className="text-lg font-bold text-gray-700">疏文預覽</h3>
+                            <div className="w-2/3 bg-gray-200 p-6 flex flex-col h-screen overflow-y-auto">
+                                <div className="flex justify-between items-center mb-4 no-print bg-white p-3 rounded-lg shadow-sm">
+                                    <div className="flex items-center">
+                                        <h3 className="text-lg font-bold text-gray-700 mr-4">預覽畫面</h3>
+                                        {isOverprintMode && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">套印模式啟用中</span>}
+                                    </div>
                                     <button 
                                         onClick={handlePrint}
                                         disabled={generatedShuwenList.length === 0}
-                                        className={`px-4 py-2 rounded-md shadow-sm text-sm font-medium flex items-center ${generatedShuwenList.length > 0 ? 'bg-red-700 text-white hover:bg-red-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                                        className={`px-5 py-2 rounded-md shadow text-sm font-bold flex items-center transition-colors ${generatedShuwenList.length > 0 ? 'bg-red-700 text-white hover:bg-red-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                                     >
                                         <Printer className="w-4 h-4 mr-2" />
-                                        列印疏文 ({generatedShuwenList.length} 份)
+                                        執行列印 ({generatedShuwenList.length} 份)
                                     </button>
                                 </div>
 
                                 {/* 預覽容器 (也是列印容器) */}
-                                <div id="print-area" className="flex-1 bg-gray-100 p-4 rounded shadow-inner">
+                                <div id="print-area" className="flex-1 bg-transparent rounded">
                                     {generatedShuwenList.length === 0 ? (
-                                        <div className="h-full min-h-[50vh] flex items-center justify-center text-gray-400 no-print">
-                                            請從左側選擇信眾以生成疏文
+                                        <div className="h-full min-h-[50vh] flex items-center justify-center text-gray-500 font-medium no-print">
+                                            請從左側選擇要列印的名單以生成預覽
                                         </div>
                                     ) : (
                                         generatedShuwenList.map((shuwen, index) => (
                                             <div 
                                                 key={index} 
-                                                className={`bg-white p-12 mx-auto shadow-lg mb-8 relative page-break`}
+                                                className={`mx-auto mb-8 relative page-break ${isOverprintMode ? 'bg-transparent' : 'bg-white shadow-xl'}`}
                                                 style={{ 
                                                     width: '210mm', 
                                                     minHeight: '297mm',
-                                                    backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg stroke=\'%23fca5a5\' stroke-width=\'1\' stroke-opacity=\'0.2\' fill=\'none\'%3E%3Cpath d=\'M0 0h100v100H0z\'/%3E%3C/g%3E%3C/svg%3E")', // 淡淡的網格背景增添傳統感
-                                                    border: '2px solid #991b1b', // 深紅色邊框
-                                                    padding: '40px'
+                                                    // 根據套印模式決定是否顯示背景與邊框
+                                                    backgroundImage: isOverprintMode ? 'none' : 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg stroke=\'%23fca5a5\' stroke-width=\'1\' stroke-opacity=\'0.2\' fill=\'none\'%3E%3Cpath d=\'M0 0h100v100H0z\'/%3E%3C/g%3E%3C/svg%3E")',
+                                                    border: isOverprintMode ? 'none' : '2px solid #991b1b',
+                                                    // 根據模式設定內距 (套印模式使用自訂邊距)
+                                                    paddingTop: isOverprintMode ? `${printMarginTop}mm` : '40px',
+                                                    paddingRight: isOverprintMode ? `${printMarginRight}mm` : '40px',
+                                                    paddingBottom: isOverprintMode ? '0' : '40px',
+                                                    paddingLeft: isOverprintMode ? '0' : '40px',
+                                                    boxSizing: 'border-box'
                                                 }}
                                             >
                                                 {/* 傳統直式排版 CSS 設定 */}
@@ -395,20 +482,24 @@ export default function App() {
                                                         lineHeight: '2.5',
                                                         fontSize: '18px',
                                                         margin: '0 auto',
-                                                        height: '250mm'
+                                                        height: isOverprintMode ? `calc(297mm - ${printMarginTop}mm)` : '250mm'
                                                     }}
                                                 >
-                                                    <h1 className="text-3xl font-bold mb-8 text-red-800" style={{ letterSpacing: '0.5em' }}>{selectedTemplate?.title}</h1>
-                                                    <div className="whitespace-pre-wrap" style={{ fontFamily: '"DFKai-SB", "BiauKai", serif' }}>
+                                                    <h1 className="text-3xl font-bold mb-8 text-black" style={{ letterSpacing: '0.5em' }}>{selectedTemplate?.title}</h1>
+                                                    <div className="whitespace-pre-wrap font-bold" style={{ fontFamily: '"DFKai-SB", "BiauKai", serif' }}>
                                                         {shuwen.content}
                                                     </div>
                                                 </div>
                                                 
-                                                {/* 裝飾角落 */}
-                                                <div className="absolute top-2 left-2 w-8 h-8 border-t-4 border-l-4 border-red-800"></div>
-                                                <div className="absolute top-2 right-2 w-8 h-8 border-t-4 border-r-4 border-red-800"></div>
-                                                <div className="absolute bottom-2 left-2 w-8 h-8 border-b-4 border-l-4 border-red-800"></div>
-                                                <div className="absolute bottom-2 right-2 w-8 h-8 border-b-4 border-r-4 border-red-800"></div>
+                                                {/* 裝飾角落 (僅非套印模式顯示) */}
+                                                {!isOverprintMode && (
+                                                    <>
+                                                        <div className="absolute top-2 left-2 w-8 h-8 border-t-4 border-l-4 border-red-800"></div>
+                                                        <div className="absolute top-2 right-2 w-8 h-8 border-t-4 border-r-4 border-red-800"></div>
+                                                        <div className="absolute bottom-2 left-2 w-8 h-8 border-b-4 border-l-4 border-red-800"></div>
+                                                        <div className="absolute bottom-2 right-2 w-8 h-8 border-b-4 border-r-4 border-red-800"></div>
+                                                    </>
+                                                )}
                                             </div>
                                         ))
                                     )}
@@ -422,71 +513,129 @@ export default function App() {
 
                 {/* 信眾編輯 Modal */}
                 {isBelieverModalOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 no-print">
-                        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                            <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
-                                <h3 className="text-lg font-bold text-gray-900">{currentBeliever.id ? '編輯信眾' : '新增信眾'}</h3>
-                                <button onClick={() => setIsBelieverModalOpen(false)} className="text-gray-400 hover:text-gray-500">
+                    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 no-print backdrop-blur-sm">
+                        <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto">
+                            <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10 shadow-sm">
+                                <h3 className="text-xl font-bold text-gray-900">{currentBeliever.id ? '編輯資料' : '新增資料'}</h3>
+                                <button onClick={() => setIsBelieverModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors bg-gray-100 rounded-full p-1">
                                     <XIcon className="w-5 h-5" />
                                 </button>
                             </div>
                             
-                            <div className="p-6 grid grid-cols-2 gap-4">
-                                {/* 國曆轉農曆工具區塊 */}
-                                <div className="col-span-2 bg-red-50 p-4 rounded-md border border-red-100 mb-2">
-                                    <label className="block text-sm font-bold text-red-800 mb-2">✨ 國曆轉農曆與八字自動計算</label>
-                                    <div className="flex space-x-2">
+                            <div className="p-6 grid grid-cols-2 gap-5">
+                                {/* 身分切換 */}
+                                <div className="col-span-2 flex items-center space-x-6 pb-2 border-b border-gray-100">
+                                    <label className="text-sm font-bold text-gray-700">資料類別：</label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="personType" 
+                                            value="living" 
+                                            checked={currentBeliever.type === 'living'} 
+                                            onChange={() => setCurrentBeliever({...currentBeliever, type: 'living'})} 
+                                            className="text-red-600 focus:ring-red-500 w-4 h-4"
+                                        />
+                                        <span className="font-medium text-gray-700">陽上 (在世)</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="personType" 
+                                            value="deceased" 
+                                            checked={currentBeliever.type === 'deceased'} 
+                                            onChange={() => setCurrentBeliever({...currentBeliever, type: 'deceased'})} 
+                                            className="text-gray-600 focus:ring-gray-500 w-4 h-4"
+                                        />
+                                        <span className="font-medium text-gray-700">亡者 (往生)</span>
+                                    </label>
+                                </div>
+
+                                {/* 姓名與性別 */}
+                                <div className="col-span-1">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">姓名 <span className="text-red-500">*</span></label>
+                                    <input type="text" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.name} onChange={e => setCurrentBeliever({...currentBeliever, name: e.target.value})} placeholder="請輸入姓名" />
+                                </div>
+                                <div className="col-span-1">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">性別</label>
+                                    <select className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.gender} onChange={e => setCurrentBeliever({...currentBeliever, gender: e.target.value})}>
+                                        <option value="男">男 {currentBeliever.type === 'living' ? '(信士)' : ''}</option>
+                                        <option value="女">女 {currentBeliever.type === 'living' ? '(信女)' : ''}</option>
+                                    </select>
+                                </div>
+
+                                {/* 出生生辰區塊 */}
+                                <div className="col-span-2 bg-yellow-50 p-4 rounded-md border border-yellow-200">
+                                    <label className="block text-sm font-bold text-yellow-800 mb-2">✨ 出生生辰與八字計算</label>
+                                    <div className="flex space-x-2 mb-3">
                                         <input
                                             type="datetime-local"
-                                            className="flex-1 border-gray-300 rounded-md shadow-sm p-2 bg-white"
-                                            value={gregorianDate}
-                                            onChange={e => setGregorianDate(e.target.value)}
+                                            className="flex-1 border-gray-300 rounded-md shadow-sm p-2 bg-white text-sm"
+                                            value={gregorianBirth}
+                                            onChange={e => setGregorianBirth(e.target.value)}
                                         />
                                         <button
                                             type="button"
-                                            onClick={handleConvertDate}
-                                            className="px-4 py-2 bg-red-700 text-white rounded-md text-sm font-medium hover:bg-red-800 transition-colors whitespace-nowrap"
+                                            onClick={() => handleConvertDate('birth')}
+                                            className="px-4 py-2 bg-yellow-600 text-white rounded-md text-sm font-bold hover:bg-yellow-700 transition-colors whitespace-nowrap"
                                         >
-                                            自動轉換
+                                            轉換農曆
                                         </button>
                                     </div>
-                                    <p className="text-xs text-red-600 mt-2">
-                                        選擇國曆出生年月日時，點擊轉換即可自動填入下方的「農曆生辰」與「八字」。
-                                    </p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-600 mb-1">農曆出生生辰 (手動/自動)</label>
+                                            <input type="text" placeholder="例: 甲子年正月初一子時" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 border p-2 text-sm" value={currentBeliever.lunarDob} onChange={e => setCurrentBeliever({...currentBeliever, lunarDob: e.target.value})} />
+                                        </div>
+                                        {currentBeliever.type === 'living' && (
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-600 mb-1">八字</label>
+                                                <input type="text" placeholder="例: 甲子 丙寅 丁卯 甲子" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 border p-2 text-sm font-mono" value={currentBeliever.bazi} onChange={e => setCurrentBeliever({...currentBeliever, bazi: e.target.value})} />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">姓名</label>
-                                    <input type="text" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.name} onChange={e => setCurrentBeliever({...currentBeliever, name: e.target.value})} />
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">性別</label>
-                                    <select className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.gender} onChange={e => setCurrentBeliever({...currentBeliever, gender: e.target.value})}>
-                                        <option value="男">男 (信士)</option>
-                                        <option value="女">女 (信女)</option>
-                                    </select>
-                                </div>
+                                {/* 往生生辰區塊 (僅亡者顯示) */}
+                                {currentBeliever.type === 'deceased' && (
+                                    <div className="col-span-2 bg-gray-100 p-4 rounded-md border border-gray-200">
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">🕊️ 往生生辰計算</label>
+                                        <div className="flex space-x-2 mb-3">
+                                            <input
+                                                type="datetime-local"
+                                                className="flex-1 border-gray-300 rounded-md shadow-sm p-2 bg-white text-sm"
+                                                value={gregorianDeath}
+                                                onChange={e => setGregorianDeath(e.target.value)}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleConvertDate('death')}
+                                                className="px-4 py-2 bg-gray-600 text-white rounded-md text-sm font-bold hover:bg-gray-700 transition-colors whitespace-nowrap"
+                                            >
+                                                轉換農曆
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-600 mb-1">農曆往生生辰 (手動/自動)</label>
+                                            <input type="text" placeholder="例: 癸卯年十月廿日申時" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-500 border p-2 text-sm" value={currentBeliever.lunarDeath} onChange={e => setCurrentBeliever({...currentBeliever, lunarDeath: e.target.value})} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 聯絡資料 */}
                                 <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">聯絡電話</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">{currentBeliever.type === 'living' ? '聯絡電話' : '家屬聯絡電話'}</label>
                                     <input type="text" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.phone} onChange={e => setCurrentBeliever({...currentBeliever, phone: e.target.value})} />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">居住地址</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">{currentBeliever.type === 'living' ? '居住地址' : '安息地點 / 塔位地址'}</label>
                                     <input type="text" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2" value={currentBeliever.address} onChange={e => setCurrentBeliever({...currentBeliever, address: e.target.value})} />
                                 </div>
-                                <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">農曆生辰 (年/月/日/時)</label>
-                                    <input type="text" placeholder="例: 甲子年正月初一子時" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2 bg-yellow-50" value={currentBeliever.lunarDob} onChange={e => setCurrentBeliever({...currentBeliever, lunarDob: e.target.value})} />
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">八字</label>
-                                    <input type="text" placeholder="例: 甲子 丙寅 丁卯 甲子" className="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-2 bg-yellow-50" value={currentBeliever.bazi} onChange={e => setCurrentBeliever({...currentBeliever, bazi: e.target.value})} />
-                                </div>
                             </div>
+
                             <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-end space-x-3 border-t sticky bottom-0">
-                                <button onClick={() => setIsBelieverModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">取消</button>
-                                <button onClick={handleSaveBeliever} className="px-4 py-2 bg-red-700 text-white rounded-md text-sm font-medium hover:bg-red-800 flex items-center">
-                                    <Save className="w-4 h-4 mr-2" /> 儲存
+                                <button onClick={() => setIsBelieverModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-bold text-gray-700 hover:bg-gray-100 transition-colors">取消</button>
+                                <button onClick={handleSaveBeliever} className="px-5 py-2 bg-red-700 text-white rounded-md text-sm font-bold hover:bg-red-800 flex items-center shadow-md transition-colors">
+                                    <Save className="w-4 h-4 mr-2" /> 儲存資料
                                 </button>
                             </div>
                         </div>
@@ -495,30 +644,31 @@ export default function App() {
 
                 {/* 批次匯入 Modal */}
                 {isImportModalOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 no-print">
-                        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 no-print backdrop-blur-sm">
+                        <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl">
                             <div className="flex justify-between items-center p-6 border-b">
-                                <h3 className="text-lg font-bold text-gray-900">批次匯入信眾資料</h3>
-                                <button onClick={() => setIsImportModalOpen(false)} className="text-gray-400 hover:text-gray-500">
+                                <h3 className="text-xl font-bold text-gray-900">批次匯入名單</h3>
+                                <button onClick={() => setIsImportModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors bg-gray-100 rounded-full p-1">
                                     <XIcon className="w-5 h-5" />
                                 </button>
                             </div>
                             <div className="p-6">
-                                <p className="text-sm text-gray-600 mb-4">
-                                    請貼上逗號分隔的資料 (CSV格式)。<br/>
-                                    格式順序：<strong className="text-red-600">姓名,性別,電話,地址,農曆生日,八字</strong><br/>
-                                    一行代表一位信眾。
-                                </p>
+                                <div className="bg-blue-50 p-4 rounded-lg mb-4 border border-blue-100">
+                                    <p className="text-sm text-blue-800 font-medium">
+                                        請貼上逗號分隔的資料 (CSV格式)。<br/>
+                                        格式順序：<strong className="text-red-600">姓名, 類別(陽上/亡者), 性別, 電話, 地址, 農曆生日, 八字, 往生生辰</strong><br/>
+                                    </p>
+                                </div>
                                 <textarea 
-                                    className="w-full h-64 border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 border p-3 font-mono text-sm"
-                                    placeholder="王大明,男,0912345678,台北市信義區...,甲子年正月初一子時,甲子 丙寅 丁卯 甲子&#10;林小華,女,0987654321,台中市西屯區...,乙丑年二月十五午時,乙丑 戊寅 己巳 庚午"
+                                    className="w-full h-64 border-gray-300 rounded-md shadow-inner focus:ring-red-500 focus:border-red-500 border p-3 font-mono text-sm bg-gray-50"
+                                    placeholder="王大明,陽上,男,0912345678,台北市信義區...,甲子年正月初一子時,甲子 丙寅 丁卯 甲子,&#10;陳阿公,亡者,男,,高雄市某靈骨塔,辛亥年五月初五子時,,癸卯年十月廿日申時"
                                     value={importText}
                                     onChange={(e) => setImportText(e.target.value)}
                                 ></textarea>
                             </div>
                             <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-end space-x-3">
-                                <button onClick={() => setIsImportModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">取消</button>
-                                <button onClick={handleImport} className="px-4 py-2 bg-red-700 text-white rounded-md text-sm font-medium hover:bg-red-800 flex items-center">
+                                <button onClick={() => setIsImportModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-bold text-gray-700 hover:bg-gray-100">取消</button>
+                                <button onClick={handleImport} className="px-5 py-2 bg-red-700 text-white rounded-md text-sm font-bold hover:bg-red-800 flex items-center shadow-md">
                                     <Upload className="w-4 h-4 mr-2" /> 執行匯入
                                 </button>
                             </div>
